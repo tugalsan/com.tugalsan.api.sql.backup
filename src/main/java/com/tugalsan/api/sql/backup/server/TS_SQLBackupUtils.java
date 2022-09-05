@@ -40,7 +40,7 @@ public class TS_SQLBackupUtils {
         TS_ThreadRunUtils.everyDays(true, 1, () -> {
 //                d.ci("executeEveryDay", "waiting random time...");
 //                TS_ThreadUtils.waitForSeconds(0, 60 * 60 * 2);
-            var now = new TGS_Time();
+            var now = TGS_Time.of();
             var dstDbFolder = dstFolder.resolve(anchor.config.dbName);
             TS_DirectoryUtils.createDirectoriesIfNotExists(dstDbFolder);
             var pathDump = dstDbFolder.resolve(now.toStringHTML5_YYYY_MM_DD() + ".dump");
@@ -116,7 +116,7 @@ public class TS_SQLBackupUtils {
     //CLEANUP
     private static void cleanUp(Path dstFolder) {
         var subFiles = TS_DirectoryUtils.subFiles(dstFolder, null, true, false);
-        var prefix = new TGS_Time().toStringHTML5_YYYY_MM();
+        var prefix = TGS_Time.of().toStringHTML5_YYYY_MM();
         subFiles.stream()
                 .filter(subFile -> !subFile.getFileName().toString().startsWith(prefix))
                 .forEachOrdered(subFile -> {
