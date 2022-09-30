@@ -2,7 +2,7 @@ package com.tugalsan.api.sql.backup.server;
 
 import java.nio.file.*;
 import java.util.*;
-import com.tugalsan.api.file.server.*; 
+import com.tugalsan.api.file.server.*;
 import com.tugalsan.api.file.txt.server.*;
 import com.tugalsan.api.time.client.*;
 import com.tugalsan.api.log.server.*;
@@ -36,7 +36,7 @@ public class TS_SQLBackupUtils {
     }
 
     public static void backupEveryDay(TS_SQLConnAnchor anchor, Path dstFolder, Path exeMYSQLdump, Path exeMYSQL, Path exe7z) {
-        d.cr("backupEveryDay", "TS_ThreadOnceUtils.addExeEveryDay", dstFolder);
+        d.cr("backupEveryDay", dstFolder);
         TS_ThreadRun.everyDays(true, 1, () -> {
 //                d.ci("executeEveryDay", "waiting random time...");
 //                TS_ThreadUtils.waitForSeconds(0, 60 * 60 * 2);
