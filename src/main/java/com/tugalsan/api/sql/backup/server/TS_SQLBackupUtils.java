@@ -37,7 +37,7 @@ public class TS_SQLBackupUtils {
 
     public static void backupEveryDay(TS_SQLConnAnchor anchor, Path dstFolder, Path exeMYSQLdump, Path exeMYSQL, Path exe7z) {
         d.cr("backupEveryDay", "TS_ThreadOnceUtils.addExeEveryDay", dstFolder);
-        TS_ThreadRunUtils.everyDays(true, 1, () -> {
+        TS_ThreadRun.everyDays(true, 1, () -> {
 //                d.ci("executeEveryDay", "waiting random time...");
 //                TS_ThreadUtils.waitForSeconds(0, 60 * 60 * 2);
             var now = TGS_Time.of();
