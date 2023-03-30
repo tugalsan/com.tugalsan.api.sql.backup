@@ -81,11 +81,11 @@ public class TS_SQLBackupUtils {
         if (anchor.config.dbPassword == null || anchor.config.dbPassword.isEmpty()) {
             var cmd = exeMYSQLdump.toAbsolutePath().toString() + " -u" + anchor.config.dbUser + " --databases " + anchor.config.dbName + " -r " + pathDump.toAbsolutePath().toString();
             d.ci("backup_toFileDump", "will run cmd", cmd);
-            sysOut = TS_Process.of(cmd).output;
+            sysOut = TS_OsProcess.of(cmd).output;
         } else {
             var cmd = exeMYSQLdump.toAbsolutePath().toString() + " -u" + anchor.config.dbUser + " -p" + anchor.config.dbPassword + " --databases " + anchor.config.dbName + " -r " + pathDump.toAbsolutePath().toString();
             d.ci("backup_toFileDump", "will run cmd", cmd);
-            sysOut = TS_Process.of(cmd).output;
+            sysOut = TS_OsProcess.of(cmd).output;
         }
         d.cr("backup_toFileDump", "backupFinWith", sysOut);
     }
