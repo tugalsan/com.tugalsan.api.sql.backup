@@ -47,22 +47,22 @@ public class TS_SQLBackupUtils {
             var pathZip = dstDbFolder.resolve(now.toStringHTML5_YYYY_MM_DD() + ".zip");
             var pathBat = pathDump.resolveSibling(now.toStringHTML5_YYYY_MM_DD() + ".bat");
             if (TS_FileUtils.isExistFile(pathBat)) {
-                d.ci("executeEveryDay", "restore already exists", pathBat.toAbsolutePath().toString());
+                d.ci("backupEveryDay", "restore already exists", pathBat.toAbsolutePath().toString());
             } else {
-                d.ci("executeEveryDay", "restore does not exists", pathBat.toAbsolutePath().toString());
-                d.ci("executeEveryDay", "will run cleanup...");
+                d.ci("backupEveryDay", "restore does not exists", pathBat.toAbsolutePath().toString());
+                d.ci("backupEveryDay", "will run cleanup...");
                 cleanUp(dstDbFolder);
-                d.ci("executeEveryDay", "will run create bat...");
+                d.ci("backupEveryDay", "will run create bat...");
                 restore_createBat(anchor, exeMYSQL, exe7z, pathDump, pathZip, pathBat);
                 if (TS_FileUtils.isExistFile(pathZip) || TS_FileUtils.isExistFile(pathDump)) {
-                    d.ci("executeEveryDay", "backup already exists", pathZip.toAbsolutePath().toString());
+                    d.ci("backupEveryDay", "backup already exists", pathZip.toAbsolutePath().toString());
                 } else {
-                    d.ci("executeEveryDay", "will run create zip...");
+                    d.ci("backupEveryDay", "will run create zip...");
                     backup_createFileZip(anchor, exeMYSQLdump, pathDump, pathZip);
                 }
-                d.ci("executeEveryDay", "backup finished.");
+                d.ci("backupEveryDay", "backup finished.");
             }
-            d.ci("executeEveryDay", "startWait...", now.toString());
+            d.ci("backupEveryDay", "startWait...", now.toString());
         });
     }
 
