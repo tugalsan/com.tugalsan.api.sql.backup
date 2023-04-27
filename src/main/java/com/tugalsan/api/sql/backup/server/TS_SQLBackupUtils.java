@@ -43,9 +43,9 @@ public class TS_SQLBackupUtils {
             var now = TGS_Time.of();
             var dstDbFolder = dstFolder.resolve(anchor.config.dbName);
             TS_DirectoryUtils.createDirectoriesIfNotExists(dstDbFolder);
-            var pathDump = dstDbFolder.resolve(now.toStringHTML5_YYYY_MM_DD() + ".dump");
-            var pathZip = dstDbFolder.resolve(now.toStringHTML5_YYYY_MM_DD() + ".zip");
-            var pathBat = pathDump.resolveSibling(now.toStringHTML5_YYYY_MM_DD() + ".bat");
+            var pathDump = dstDbFolder.resolve(now.toString_YYYY_MM_DD() + ".dump");
+            var pathZip = dstDbFolder.resolve(now.toString_YYYY_MM_DD() + ".zip");
+            var pathBat = pathDump.resolveSibling(now.toString_YYYY_MM_DD() + ".bat");
             if (TS_FileUtils.isExistFile(pathBat)) {
                 d.ci("backupEveryDay", "restore already exists", pathBat.toAbsolutePath().toString());
             } else {
@@ -116,7 +116,7 @@ public class TS_SQLBackupUtils {
     //CLEANUP
     private static void cleanUp(Path dstFolder) {
         var subFiles = TS_DirectoryUtils.subFiles(dstFolder, null, true, false);
-        var prefix = TGS_Time.of().toStringHTML5_YYYY_MM();
+        var prefix = TGS_Time.of().toString_YYYY_MM();
         subFiles.stream()
                 .filter(subFile -> !subFile.getFileName().toString().startsWith(prefix))
                 .forEachOrdered(subFile -> {
