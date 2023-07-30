@@ -9,7 +9,7 @@ import com.tugalsan.api.log.server.*;
 import com.tugalsan.api.os.server.*;
 import com.tugalsan.api.file.zip.server.*;
 import com.tugalsan.api.sql.conn.server.*;
-import com.tugalsan.api.thread.server.*;
+import com.tugalsan.api.thread.server.async.TS_ThreadAsync;
 
 public class TS_SQLBackupUtils {
 
@@ -37,7 +37,7 @@ public class TS_SQLBackupUtils {
 
     public static void backupEveryDay(TS_SQLConnAnchor anchor, Path dstFolder, Path exeMYSQLdump, Path exeMYSQL, Path exe7z) {
         d.cr("backupEveryDay", dstFolder);
-        TS_ThreadRun.everyDays(true, 1, () -> {
+        TS_ThreadAsync.everyDays(true, 1, () -> {
 //                d.ci("executeEveryDay", "waiting random time...");
 //                TS_ThreadUtils.waitForSeconds(0, 60 * 60 * 2);
             var now = TGS_Time.of();
