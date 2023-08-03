@@ -9,7 +9,7 @@ import com.tugalsan.api.log.server.*;
 import com.tugalsan.api.os.server.*;
 import com.tugalsan.api.file.zip.server.*;
 import com.tugalsan.api.sql.conn.server.*;
-import com.tugalsan.api.thread.server.TS_ThreadKillTrigger;
+import com.tugalsan.api.thread.server.safe.TS_ThreadSafeTrigger;
 import com.tugalsan.api.thread.server.async.TS_ThreadAsync;
 
 public class TS_SQLBackupUtils {
@@ -36,7 +36,7 @@ public class TS_SQLBackupUtils {
         return "appNameForBackupSQL";
     }
 
-    public static void backupEveryDay(TS_ThreadKillTrigger killTrigger, TS_SQLConnAnchor anchor, Path dstFolder, Path exeMYSQLdump, Path exeMYSQL, Path exe7z) {
+    public static void backupEveryDay(TS_ThreadSafeTrigger killTrigger, TS_SQLConnAnchor anchor, Path dstFolder, Path exeMYSQLdump, Path exeMYSQL, Path exe7z) {
         d.cr("backupEveryDay", dstFolder);
         TS_ThreadAsync.everyDays(killTrigger, true, 1, kt -> {
 //                d.ci("executeEveryDay", "waiting random time...");
