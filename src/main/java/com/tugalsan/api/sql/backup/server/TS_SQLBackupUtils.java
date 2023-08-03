@@ -9,7 +9,8 @@ import com.tugalsan.api.log.server.*;
 import com.tugalsan.api.os.server.*;
 import com.tugalsan.api.file.zip.server.*;
 import com.tugalsan.api.sql.conn.server.*;
-import com.tugalsan.api.thread.server.struct.async.TS_ThreadAsync;
+import com.tugalsan.api.thread.server.TS_ThreadKillTrigger;
+import com.tugalsan.api.thread.server.async.TS_ThreadAsync;
 
 public class TS_SQLBackupUtils {
 
@@ -35,9 +36,9 @@ public class TS_SQLBackupUtils {
         return "appNameForBackupSQL";
     }
 
-    public static void backupEveryDay(TS_SQLConnAnchor anchor, Path dstFolder, Path exeMYSQLdump, Path exeMYSQL, Path exe7z) {
+    public static void backupEveryDay(TS_ThreadKillTrigger killTrigger, TS_SQLConnAnchor anchor, Path dstFolder, Path exeMYSQLdump, Path exeMYSQL, Path exe7z) {
         d.cr("backupEveryDay", dstFolder);
-        TS_ThreadAsync.everyDays(true, 1, () -> {
+        TS_ThreadAsync.everyDays(killTrigger, true, 1, kt -> {
 //                d.ci("executeEveryDay", "waiting random time...");
 //                TS_ThreadUtils.waitForSeconds(0, 60 * 60 * 2);
             var now = TGS_Time.of();
@@ -50,13 +51,22 @@ public class TS_SQLBackupUtils {
                 d.ci("backupEveryDay", "restore already exists", pathBat.toAbsolutePath().toString());
             } else {
                 d.ci("backupEveryDay", "restore does not exists", pathBat.toAbsolutePath().toString());
+                if (killTrigger.hasTriggered()) {
+                    return;
+                }
                 d.ci("backupEveryDay", "will run cleanup...");
                 cleanUp(dstDbFolder);
+                if (killTrigger.hasTriggered()) {
+                    return;
+                }
                 d.ci("backupEveryDay", "will run create bat...");
                 restore_createBat(anchor, exeMYSQL, exe7z, pathDump, pathZip, pathBat);
                 if (TS_FileUtils.isExistFile(pathZip) || TS_FileUtils.isExistFile(pathDump)) {
                     d.ci("backupEveryDay", "backup already exists", pathZip.toAbsolutePath().toString());
                 } else {
+                    if (killTrigger.hasTriggered()) {
+                        return;
+                    }
                     d.ci("backupEveryDay", "will run create zip...");
                     backup_createFileZip(anchor, exeMYSQLdump, pathDump, pathZip);
                 }
