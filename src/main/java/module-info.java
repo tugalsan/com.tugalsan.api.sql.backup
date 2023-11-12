@@ -1,5 +1,4 @@
 module com.tugalsan.api.sql.backup {
-    requires gwt.user;
     requires com.tugalsan.api.time;
     requires com.tugalsan.api.log;
     requires com.tugalsan.api.os;

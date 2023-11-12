@@ -7,30 +7,6 @@
     
     <dependencies>
         <dependency>
-            <groupId>org.gwtproject</groupId>
-            <artifactId>gwt-user</artifactId><!--gwt-user ver2022.07.05 -->
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.jsinterop</groupId>
-                    <artifactId>jsinterop-annotations</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>javax.validation</groupId>
-                    <artifactId>validation-api</artifactId>
-                </exclusion>                
-                <exclusion>
-                    <groupId>javax.servlet</groupId>
-                    <artifactId>javax.servlet-api</artifactId>
-                </exclusion>                
-                <exclusion>
-                    <groupId>org.w3c.css</groupId>
-                    <artifactId>sac</artifactId>
-                </exclusion>   
-            </exclusions>
-            <version>2.10.0</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>com.tugalsan.api.thread</artifactId>
             <version>${project.version}</version>
@@ -88,13 +64,13 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.11.0</version>
                 <configuration>
-                    <release>21</release><enablePreview>true</enablePreview>
+                    <release>21</release>
+                     <!--  <enablePreview>true</enablePreview>
                     <compilerArgs>
-                       
-                        <arg>--add-modules</arg>
+                       <arg>- -add-modules</arg>
                         <arg>jdk.incubator.vector</arg>
-                        <!-- <arg>-XX:+EnableDynamicAgentLoading -->
-                    </compilerArgs>
+                        <arg>-XX:+EnableDynamicAgentLoading 
+                    </compilerArgs> -->
                 </configuration>
             </plugin>
         </plugins>
