@@ -8,9 +8,12 @@ import com.tugalsan.api.time.client.*;
 import com.tugalsan.api.log.server.*;
 import com.tugalsan.api.os.server.*;
 import com.tugalsan.api.file.zip.server.*;
+import com.tugalsan.api.runnable.client.TGS_RunnableType2;
 import com.tugalsan.api.sql.conn.server.*;
 import com.tugalsan.api.thread.server.sync.TS_ThreadSyncTrigger;
 import com.tugalsan.api.thread.server.async.TS_ThreadAsyncScheduled;
+import com.tugalsan.api.union.client.TGS_UnionExcuse;
+import com.tugalsan.api.union.client.TGS_UnionExcuseVoid;
 import java.time.Duration;
 
 public class TS_SQLBackupUtils {
@@ -56,12 +59,19 @@ public class TS_SQLBackupUtils {
                     return;
                 }
                 d.ci("backupEveryDay", "will run cleanup...");
-                cleanUp(dstDbFolder);
+                var u_cleanUp = cleanUp(dstDbFolder, (subFile, e) -> d.ce("backupEveryDay.cleanUp", "cannot delete %s, reason: %s".formatted(subFile.toString(), e.getMessage())));
+                if (u_cleanUp.isExcuse()) {
+                    d.ct("backupEveryDay.cleanUp", u_cleanUp.excuse());
+                }
                 if (killTrigger.hasTriggered()) {
                     return;
                 }
                 d.ci("backupEveryDay", "will run create bat...");
-                restore_createBat(anchor, exeMYSQL, exe7z, pathDump, pathZip, pathBat);
+                var u_createBat = restore_createBat(anchor, exeMYSQL, exe7z, pathDump, pathZip, pathBat);
+                if (u_createBat.isExcuse()) {
+                    d.ct("backupEveryDay.cleanUp", u_createBat.excuse());
+                    return;
+                }
                 if (TS_FileUtils.isExistFile(pathZip) || TS_FileUtils.isExistFile(pathDump)) {
                     d.ci("backupEveryDay", "backup already exists", pathZip.toAbsolutePath().toString());
                 } else {
@@ -69,7 +79,11 @@ public class TS_SQLBackupUtils {
                         return;
                     }
                     d.ci("backupEveryDay", "will run create zip...");
-                    backup_createFileZip(anchor, exeMYSQLdump, pathDump, pathZip);
+                    var u_createZip = backup_createFileZip(anchor, exeMYSQLdump, pathDump, pathZip);
+                    if (u_createZip.isExcuse()) {
+                        d.ct("backupEveryDay.cleanUp", u_createZip.excuse());
+                        return;
+                    }
                 }
                 d.ci("backupEveryDay", "backup finished.");
             }
@@ -78,34 +92,42 @@ public class TS_SQLBackupUtils {
     }
 
     //BACKUP
-    private static void backup_createFileZip(TS_SQLConnAnchor anchor, Path exeMYSQLdump, Path pathDump, Path pathZip) {
-        backup_toFileDump(anchor, exeMYSQLdump, pathDump);
-        TS_FileZipUtils.zipFile(pathDump, pathZip);
+    private static TGS_UnionExcuseVoid backup_createFileZip(TS_SQLConnAnchor anchor, Path exeMYSQLdump, Path pathDump, Path pathZip) {
+        var u_backup_toFileDump = backup_toFileDump(anchor, exeMYSQLdump, pathDump);
+        if (u_backup_toFileDump.isExcuse()) {
+            return u_backup_toFileDump.toExcuseVoid();
+        }
+        var u_zipFile = TS_FileZipUtils.zipFile(pathDump, pathZip);
+        if (u_zipFile.isExcuse()) {
+            return u_zipFile;
+        }
         d.cr("backup_createFileZip", "zippedTo", pathZip);
-        TS_FileUtils.deleteFileIfExists(pathDump);
+        var u_delete = TS_FileUtils.deleteFileIfExists(pathDump);
+        if (u_delete.isExcuse()) {
+            return u_delete;
+        }
         d.cr("backup_createFileZip", "cleanUp", pathDump);
+        return TGS_UnionExcuseVoid.ofVoid();
     }
 
-    private static void backup_toFileDump(TS_SQLConnAnchor anchor, Path exeMYSQLdump, Path pathDump) {
+    private static TGS_UnionExcuse<TS_OsProcess> backup_toFileDump(TS_SQLConnAnchor anchor, Path exeMYSQLdump, Path pathDump) {
         d.cr("backup_toFileDump", "backupStart", pathDump);
-        String sysOut;
+        String cmd;
         if (anchor.config.dbPassword == null || anchor.config.dbPassword.isEmpty()) {
-            var cmd = exeMYSQLdump.toAbsolutePath().toString() + " -u" + anchor.config.dbUser + " --databases " + anchor.config.dbName + " -r " + pathDump.toAbsolutePath().toString();
-            d.ci("backup_toFileDump", "will run cmd", cmd);
-            sysOut = TS_OsProcess.of(cmd).output;
+            cmd = exeMYSQLdump.toAbsolutePath().toString() + " -u" + anchor.config.dbUser + " --databases " + anchor.config.dbName + " -r " + pathDump.toAbsolutePath().toString();
         } else {
-            var cmd = exeMYSQLdump.toAbsolutePath().toString() + " -u" + anchor.config.dbUser + " -p" + anchor.config.dbPassword + " --databases " + anchor.config.dbName + " -r " + pathDump.toAbsolutePath().toString();
-            d.ci("backup_toFileDump", "will run cmd", cmd);
-            sysOut = TS_OsProcess.of(cmd).output;
+            cmd = exeMYSQLdump.toAbsolutePath().toString() + " -u" + anchor.config.dbUser + " -p" + anchor.config.dbPassword + " --databases " + anchor.config.dbName + " -r " + pathDump.toAbsolutePath().toString();
         }
-        d.cr("backup_toFileDump", "backupFinWith", sysOut);
+        d.ci("backup_toFileDump", "will run cmd", cmd);
+        return TS_OsProcess.of(cmd).toUnion();
     }
 
     //RESTORE
-    private static void restore_createBat(TS_SQLConnAnchor anchor, Path exeMYSQL, Path exe7z, Path pathDump, Path pathZip, Path pathBat) {
+    private static TGS_UnionExcuseVoid restore_createBat(TS_SQLConnAnchor anchor, Path exeMYSQL, Path exe7z, Path pathDump, Path pathZip, Path pathBat) {
         d.cr("restore_createBat", "restoreBatCreateStart", pathBat.toAbsolutePath().toString());
-        TS_FileTxtUtils.toFile(restore_createBatContent(pathDump, exeMYSQL, exe7z, pathZip, anchor), pathBat, false);
+        var u = TS_FileTxtUtils.toFile(restore_createBatContent(pathDump, exeMYSQL, exe7z, pathZip, anchor), pathBat, false);
         d.cr("restore_createBat", "restoreBatCreateFin");
+        return u;
     }
 
     private static String restore_createBatContent(Path pathDump, Path exeMYSQL, Path exe7z, Path pathZip, TS_SQLConnAnchor anchor) {
@@ -125,20 +147,30 @@ public class TS_SQLBackupUtils {
     }
 
     //CLEANUP
-    private static void cleanUp(Path dstFolder) {
-        var subFiles = TS_DirectoryUtils.subFiles(dstFolder, null, true, false);
+    private static TGS_UnionExcuseVoid cleanUp(Path dstFolder, TGS_RunnableType2<Path, Throwable> onError) {
+        var u_subFiles = TS_DirectoryUtils.subFiles(dstFolder, null, true, false);
+        if (u_subFiles.isExcuse()) {
+            return u_subFiles.toExcuseVoid();
+        }
         var prefix = TGS_Time.of().toString_YYYY_MM();
-        subFiles.stream()
+        u_subFiles.value().stream()
                 .filter(subFile -> !subFile.getFileName().toString().startsWith(prefix))
                 .forEachOrdered(subFile -> {
                     d.cr("cleanUp", "old", subFile, "deleting...");
-                    TS_FileUtils.deleteFileIfExists(subFile);
+                    var u_delete = TS_FileUtils.deleteFileIfExists(subFile);
+                    if (u_delete.isExcuse()) {
+                        onError.run(subFile, u_delete.excuse());
+                    }
                 });
-        subFiles.stream()
+        u_subFiles.value().stream()
                 .filter(subFile -> subFile.endsWith(".dump"))
                 .forEachOrdered(subFile -> {
                     d.cr("cleanUp", "dump", subFile, "deleting...");
-                    TS_FileUtils.deleteFileIfExists(subFile);
+                    var u_delete = TS_FileUtils.deleteFileIfExists(subFile);
+                    if (u_delete.isExcuse()) {
+                        onError.run(subFile, u_delete.excuse());
+                    }
                 });
+        return TGS_UnionExcuseVoid.ofVoid();
     }
 }
