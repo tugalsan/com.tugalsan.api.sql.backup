@@ -17,10 +17,6 @@ public class TS_SQLBackupUtils {
 
     final private static TS_Log d = TS_Log.of(TS_SQLBackupUtils.class);
 
-    public static String NAME_DB_PARAM() {
-        return "xampp_data/SQL/BCK";
-    }
-
     public static String NAME_DB_PARAM_EXEMYSQLDUMP() {
         return "exeMYSQLdump";
     }
