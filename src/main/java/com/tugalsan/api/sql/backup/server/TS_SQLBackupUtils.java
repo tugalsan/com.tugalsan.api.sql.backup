@@ -33,6 +33,14 @@ public class TS_SQLBackupUtils {
         return "appNameForBackupSQL";
     }
 
+    public static record Config(Path dstFolder, Path exeMYSQLdump, Path exeMYSQL, Path exe7z) {
+
+    }
+
+    public static void backupEveryDay(TS_ThreadSyncTrigger killTrigger, Duration until, TS_SQLConnAnchor anchor, Config config) {
+        backupEveryDay(killTrigger, until, anchor, config.dstFolder, config.exeMYSQLdump, config.exeMYSQL, config.exe7z);
+    }
+
     public static void backupEveryDay(TS_ThreadSyncTrigger killTrigger, Duration until, TS_SQLConnAnchor anchor, Path dstFolder, Path exeMYSQLdump, Path exeMYSQL, Path exe7z) {
         d.cr("backupEveryDay", dstFolder);
         TS_ThreadAsyncScheduled.everyDays(killTrigger, until, true, 1, kt -> {
