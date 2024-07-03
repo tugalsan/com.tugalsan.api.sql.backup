@@ -114,13 +114,13 @@ public class TS_SQLBackupUtils {
         sj.add("\"" + exe7z.toAbsolutePath().toString() + "\" e " + pathZip.toAbsolutePath().toString());
         var o = " --host=" + anchor.config.dbIp + " --port=" + anchor.config.dbPort;
         if (anchor.config.dbPassword == null || anchor.config.dbPassword.isEmpty()) {
-            sj.add(exeMYSQL.toAbsolutePath().toString() + o + " -u " + anchor.config.dbUser + " -P" + anchor.config.dbPort + " -e \"DROP DATABASE IF EXISTS " + anchor.config.dbName + ";\"");
-            sj.add(exeMYSQL.toAbsolutePath().toString() + o + " -u " + anchor.config.dbUser + " -P" + anchor.config.dbPort + " -e \"CREATE DATABASE " + anchor.config.dbName + ";\"");
-            sj.add(exeMYSQL.toAbsolutePath().toString() + o + " -u" + anchor.config.dbUser + " -P" + anchor.config.dbPort + " " + anchor.config.dbName + " < " + pathDump.toAbsolutePath().toString());
+            sj.add(exeMYSQL.toAbsolutePath().toString() + o + " -u " + anchor.config.dbUser + " -P " + anchor.config.dbPort + " -e \"DROP DATABASE IF EXISTS " + anchor.config.dbName + ";\"");
+            sj.add(exeMYSQL.toAbsolutePath().toString() + o + " -u " + anchor.config.dbUser + " -P " + anchor.config.dbPort + " -e \"CREATE DATABASE " + anchor.config.dbName + ";\"");
+            sj.add(exeMYSQL.toAbsolutePath().toString() + o + " -u" + anchor.config.dbUser + " -P " + anchor.config.dbPort + " " + anchor.config.dbName + " < " + pathDump.toAbsolutePath().toString());
         } else {
-            sj.add(exeMYSQL.toAbsolutePath().toString() + o + " -u " + anchor.config.dbUser + " -p" + anchor.config.dbPassword + " -P" + anchor.config.dbPort + " -e \"DROP DATABASE IF EXISTS " + anchor.config.dbName + ";\"");
-            sj.add(exeMYSQL.toAbsolutePath().toString() + o + " -u " + anchor.config.dbUser + " -p" + anchor.config.dbPassword + " -P" + anchor.config.dbPort + " -e \"CREATE DATABASE " + anchor.config.dbName + ";\"");
-            sj.add(exeMYSQL.toAbsolutePath().toString() + o + " -u" + anchor.config.dbUser + " -p" + anchor.config.dbPassword + " -P" + anchor.config.dbPort + " " + anchor.config.dbName + " < " + pathDump.toAbsolutePath().toString());
+            sj.add(exeMYSQL.toAbsolutePath().toString() + o + " -u " + anchor.config.dbUser + " -p" + anchor.config.dbPassword + " -P " + anchor.config.dbPort + " -e \"DROP DATABASE IF EXISTS " + anchor.config.dbName + ";\"");
+            sj.add(exeMYSQL.toAbsolutePath().toString() + o + " -u " + anchor.config.dbUser + " -p" + anchor.config.dbPassword + " -P " + anchor.config.dbPort + " -e \"CREATE DATABASE " + anchor.config.dbName + ";\"");
+            sj.add(exeMYSQL.toAbsolutePath().toString() + o + " -u" + anchor.config.dbUser + " -p" + anchor.config.dbPassword + " -P " + anchor.config.dbPort + " " + anchor.config.dbName + " < " + pathDump.toAbsolutePath().toString());
         }
         sj.add("del " + pathDump.toAbsolutePath().toString());
         return sj.toString();
