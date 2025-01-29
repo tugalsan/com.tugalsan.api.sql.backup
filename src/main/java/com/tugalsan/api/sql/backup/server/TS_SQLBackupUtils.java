@@ -37,7 +37,7 @@ public class TS_SQLBackupUtils {
 
     }
 
-    public static void backupEveryDay(Config config, TS_SQLConnAnchor anchor) {
+    public static void backupEveryDay(TS_SQLConnAnchor anchor, Config config) {
         d.cr("backupEveryDay", config.dstFolder);
         TS_ThreadAsyncScheduled.everyDays(config.killTrigger, config.until, true, 1, kt -> {
 //                d.ci("executeEveryDay", "waiting random time...");
@@ -69,7 +69,7 @@ public class TS_SQLBackupUtils {
                         return;
                     }
                     d.ci("backupEveryDay", "will run create zip...");
-                    backup_createFileZip(anchor, config.exeMYSQLdump, pathDump, pathZip);
+                    backup_createFileZip(config.killTrigger, anchor, config.exeMYSQLdump, pathDump, pathZip);
                 }
                 d.ci("backupEveryDay", "backup finished.");
             }
@@ -78,9 +78,9 @@ public class TS_SQLBackupUtils {
     }
 
     //BACKUP
-    private static void backup_createFileZip(TS_SQLConnAnchor anchor, Path exeMYSQLdump, Path pathDump, Path pathZip) {
+    private static void backup_createFileZip(TS_ThreadSyncTrigger servletKillTrigger, TS_SQLConnAnchor anchor, Path exeMYSQLdump, Path pathDump, Path pathZip) {
         backup_toFileDump(anchor, exeMYSQLdump, pathDump);
-        TS_FileZipUtils.zipFile(pathDump, pathZip);
+        TS_FileZipUtils.zipFile(servletKillTrigger, pathDump, pathZip);
         d.cr("backup_createFileZip", "zippedTo", pathZip);
         TS_FileUtils.deleteFileIfExists(pathDump);
         d.cr("backup_createFileZip", "cleanUp", pathDump);
