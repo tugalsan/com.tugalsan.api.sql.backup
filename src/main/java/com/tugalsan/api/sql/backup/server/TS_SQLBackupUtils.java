@@ -8,7 +8,9 @@ import com.tugalsan.api.time.client.*;
 import com.tugalsan.api.log.server.*;
 import com.tugalsan.api.os.server.*;
 import com.tugalsan.api.file.zip.server.*;
+import com.tugalsan.api.function.client.maythrow.checkedexceptions.TGS_FuncMTCEUtils;
 import com.tugalsan.api.sql.conn.server.*;
+import com.tugalsan.api.string.client.TGS_StringUtils;
 import com.tugalsan.api.thread.server.sync.TS_ThreadSyncTrigger;
 import com.tugalsan.api.thread.server.async.scheduled.TS_ThreadAsyncScheduled;
 import java.time.Duration;
@@ -40,40 +42,42 @@ public class TS_SQLBackupUtils {
     public static void backupEveryDay(TS_SQLConnAnchor anchor, Config config) {
         d.cr("backupEveryDay", config.dstFolder);
         TS_ThreadAsyncScheduled.everyDays(config.killTrigger, config.until, true, 1, kt -> {
+            TGS_FuncMTCEUtils.run(() -> {
 //                d.ci("executeEveryDay", "waiting random time...");
 //                TS_ThreadUtils.waitForSeconds(0, 60 * 60 * 2);
-            var now = TGS_Time.of();
-            var dstDbFolder = config.dstFolder.resolve(anchor.config.dbName);
-            TS_DirectoryUtils.createDirectoriesIfNotExists(dstDbFolder);
-            var pathDump = dstDbFolder.resolve(now.toString_YYYY_MM_DD() + ".dump");
-            var pathZip = dstDbFolder.resolve(now.toString_YYYY_MM_DD() + ".zip");
-            var pathBat = pathDump.resolveSibling(now.toString_YYYY_MM_DD() + ".bat");
-            if (TS_FileUtils.isExistFile(pathBat)) {
-                d.ci("backupEveryDay", "restore already exists", pathBat.toAbsolutePath().toString());
-            } else {
-                d.ci("backupEveryDay", "restore does not exists", pathBat.toAbsolutePath().toString());
-                if (config.killTrigger.hasTriggered()) {
-                    return;
-                }
-                d.ci("backupEveryDay", "will run cleanup...");
-                cleanUp(dstDbFolder);
-                if (config.killTrigger.hasTriggered()) {
-                    return;
-                }
-                d.ci("backupEveryDay", "will run create bat...");
-                restore_createBat(anchor, config.exeMYSQL, config.exe7z, pathDump, pathZip, pathBat);
-                if (TS_FileUtils.isExistFile(pathZip) || TS_FileUtils.isExistFile(pathDump)) {
-                    d.ci("backupEveryDay", "backup already exists", pathZip.toAbsolutePath().toString());
+                var now = TGS_Time.of();
+                var dstDbFolder = config.dstFolder.resolve(anchor.config.dbName);
+                TS_DirectoryUtils.createDirectoriesIfNotExists(dstDbFolder);
+                var pathDump = dstDbFolder.resolve(now.toString_YYYY_MM_DD() + ".dump");
+                var pathZip = dstDbFolder.resolve(now.toString_YYYY_MM_DD() + ".zip");
+                var pathBat = pathDump.resolveSibling(now.toString_YYYY_MM_DD() + ".bat");
+                if (TS_FileUtils.isExistFile(pathBat)) {
+                    d.ci("backupEveryDay", "restore already exists", pathBat.toAbsolutePath().toString());
                 } else {
+                    d.ci("backupEveryDay", "restore does not exists", pathBat.toAbsolutePath().toString());
                     if (config.killTrigger.hasTriggered()) {
                         return;
                     }
-                    d.ci("backupEveryDay", "will run create zip...");
-                    backup_createFileZip(config.killTrigger, anchor, config.exeMYSQLdump, pathDump, pathZip);
+                    d.ci("backupEveryDay", "will run cleanup...");
+                    cleanUp(dstDbFolder);
+                    if (config.killTrigger.hasTriggered()) {
+                        return;
+                    }
+                    d.ci("backupEveryDay", "will run create bat...");
+                    restore_createBat(anchor, config.exeMYSQL, config.exe7z, pathDump, pathZip, pathBat);
+                    if (TS_FileUtils.isExistFile(pathZip) || TS_FileUtils.isExistFile(pathDump)) {
+                        d.ci("backupEveryDay", "backup already exists", pathZip.toAbsolutePath().toString());
+                    } else {
+                        if (config.killTrigger.hasTriggered()) {
+                            return;
+                        }
+                        d.ci("backupEveryDay", "will run create zip...");
+                        backup_createFileZip(config.killTrigger, anchor, config.exeMYSQLdump, pathDump, pathZip);
+                    }
+                    d.ci("backupEveryDay", "backup finished.");
                 }
-                d.ci("backupEveryDay", "backup finished.");
-            }
-            d.ci("backupEveryDay", "startWait...", now.toString());
+                d.ci("backupEveryDay", "startWait...", now.toString());
+            }, e -> d.ct("backupEveryDay", e));
         });
     }
 
@@ -88,15 +92,17 @@ public class TS_SQLBackupUtils {
 
     private static void backup_toFileDump(TS_SQLConnAnchor anchor, Path exeMYSQLdump, Path pathDump) {
         d.cr("backup_toFileDump", "backupStart", pathDump);
-        String sysOut;
+        String cmd;
         if (anchor.config.dbPassword == null || anchor.config.dbPassword.isEmpty()) {
-            var cmd = exeMYSQLdump.toAbsolutePath().toString() + " -u" + anchor.config.dbUser + " -P " + anchor.config.dbPort + " --databases " + anchor.config.dbName + " -r " + pathDump.toAbsolutePath().toString();
-            d.ci("backup_toFileDump", "will run cmd", cmd);
-            sysOut = TS_OsProcess.of(cmd).output;
+            cmd = exeMYSQLdump.toAbsolutePath().toString() + " -u" + anchor.config.dbUser + " -P " + anchor.config.dbPort + " --databases " + anchor.config.dbName + " -r " + pathDump.toAbsolutePath().toString();
         } else {
-            var cmd = exeMYSQLdump.toAbsolutePath().toString() + " -u" + anchor.config.dbUser + " -p" + anchor.config.dbPassword + " -P " + anchor.config.dbPort + " --databases " + anchor.config.dbName + " -r " + pathDump.toAbsolutePath().toString();
-            d.ci("backup_toFileDump", "will run cmd", cmd);
-            sysOut = TS_OsProcess.of(cmd).output;
+            cmd = exeMYSQLdump.toAbsolutePath().toString() + " -u" + anchor.config.dbUser + " -p" + anchor.config.dbPassword + " -P " + anchor.config.dbPort + " --databases " + anchor.config.dbName + " -r " + pathDump.toAbsolutePath().toString();
+        }
+        d.ce("backup_toFileDump", "will run cmd", cmd);
+        var p = TS_OsProcess.of(cmd);
+        var sysOut = p.output;
+        if (TGS_StringUtils.cmn().isNullOrEmpty(sysOut)) {
+            sysOut = p.error;
         }
         d.cr("backup_toFileDump", "backupFinWith", sysOut);
     }
