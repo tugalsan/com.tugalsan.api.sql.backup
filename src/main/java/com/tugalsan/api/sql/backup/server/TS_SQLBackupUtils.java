@@ -17,7 +17,7 @@ import java.time.Duration;
 
 public class TS_SQLBackupUtils {
 
-    final private static TS_Log d = TS_Log.of(TS_SQLBackupUtils.class);
+    final private static TS_Log d = TS_Log.of(true, TS_SQLBackupUtils.class);
 
     public static String NAME_DB_PARAM_EXEMYSQLDUMP() {
         return "exeMYSQLdump";
@@ -111,11 +111,11 @@ public class TS_SQLBackupUtils {
         }
         d.ce("backup_toFileDump", "will run cmd", cmd);
         var p = TS_OsProcess.of(cmd);
-        var sysOut = p.output;
-        if (TGS_StringUtils.cmn().isNullOrEmpty(sysOut)) {
-            sysOut = p.error;
+        d.cr("backup_toFileDump", "backupFinWith", "p.output", p.output);
+        d.ce("backup_toFileDump", "backupFinWith", "p.error", p.error);
+        if (p.exception != null) {
+            d.ct("backup_toFileDump", p.exception);
         }
-        d.cr("backup_toFileDump", "backupFinWith", sysOut);
     }
 
     //RESTORE
@@ -150,13 +150,13 @@ public class TS_SQLBackupUtils {
         subFiles.stream()
                 .filter(subFile -> !subFile.getFileName().toString().startsWith(prefix))
                 .forEachOrdered(subFile -> {
-                    d.cr("cleanUp", "old", subFile, "deleting...");
+                    d.cr("cleanUp", "old", "deleting...", subFile);
                     TS_FileUtils.deleteFileIfExists(subFile);
                 });
         subFiles.stream()
                 .filter(subFile -> subFile.endsWith(".dump"))
                 .forEachOrdered(subFile -> {
-                    d.cr("cleanUp", "dump", subFile, "deleting...");
+                    d.cr("cleanUp", "dump", "deleting...", subFile);
                     TS_FileUtils.deleteFileIfExists(subFile);
                 });
     }
