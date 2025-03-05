@@ -132,7 +132,9 @@ public class TS_SQLBackupUtils {
     //TODO  --host=remote.example.com --port=13306
     private static String restore_createBatContent(Path pathDump, Path exeMYSQL, Path exe7z, Path pathZip, TS_SQLConnAnchor anchor) {
         var sj = new StringJoiner("\n");
-        sj.add("\"" + exe7z.toAbsolutePath().toString() + "\" e " + pathZip.toAbsolutePath().toString());
+        if (USE_ZIP) {
+            sj.add("\"" + exe7z.toAbsolutePath().toString() + "\" e " + pathZip.toAbsolutePath().toString());
+        }
         var o = " --host=" + anchor.config.dbIp + " --port=" + anchor.config.dbPort;
         if (anchor.config.dbPassword == null || anchor.config.dbPassword.isEmpty()) {
             sj.add(exeMYSQL.toAbsolutePath().toString() + o + " -u " + anchor.config.dbUser + " -P " + anchor.config.dbPort + " -e \"DROP DATABASE IF EXISTS " + anchor.config.dbName + ";\"");
@@ -143,7 +145,9 @@ public class TS_SQLBackupUtils {
             sj.add(exeMYSQL.toAbsolutePath().toString() + o + " -u " + anchor.config.dbUser + " -p" + anchor.config.dbPassword + " -P " + anchor.config.dbPort + " -e \"CREATE DATABASE " + anchor.config.dbName + ";\"");
             sj.add(exeMYSQL.toAbsolutePath().toString() + o + " -u" + anchor.config.dbUser + " -p" + anchor.config.dbPassword + " -P " + anchor.config.dbPort + " " + anchor.config.dbName + " < " + pathDump.toAbsolutePath().toString());
         }
-        sj.add("del " + pathDump.toAbsolutePath().toString());
+        if (USE_ZIP) {
+            sj.add("del " + pathDump.toAbsolutePath().toString());
+        }
         return sj.toString();
     }
 
