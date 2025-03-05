@@ -84,7 +84,7 @@ public class TS_SQLBackupUtils {
                         return;
                     }
                     d.ci("backupEveryDay.backupNow", "will run create zip...");
-                    backup_createFileZip(config.killTrigger, anchor, config.exeMYSQLdump, pathDump, pathZip);
+                    backup_createFileZip(anchor, config.exeMYSQLdump, pathDump, pathZip);
                 }
                 d.ci("backupEveryDay.backupNow", "backup finished.");
             }
@@ -93,13 +93,13 @@ public class TS_SQLBackupUtils {
     }
 
     //BACKUP
-    private static void backup_createFileZip(TS_ThreadSyncTrigger servletKillTrigger, TS_SQLConnAnchor anchor, Path exeMYSQLdump, Path pathDump, Path pathZip) {
+    private static void backup_createFileZip(TS_SQLConnAnchor anchor, Path exeMYSQLdump, Path pathDump, Path pathZip) {
         backup_toFileDump(anchor, exeMYSQLdump, pathDump);
         if (!USE_ZIP) {
             d.cr("backup_createFileZip", "skipped");
             return;
         }
-        TS_FileZipUtils.zipFile(servletKillTrigger, pathDump, pathZip);
+        TS_FileZipUtils.zipFile(pathDump, pathZip);
         d.cr("backup_createFileZip", "zippedTo", pathZip);
         TS_FileUtils.deleteFileIfExists(pathDump);
         d.cr("backup_createFileZip", "cleanUp", pathDump);
