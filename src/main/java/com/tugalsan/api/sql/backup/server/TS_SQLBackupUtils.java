@@ -10,7 +10,6 @@ import com.tugalsan.api.os.server.*;
 import com.tugalsan.api.file.zip.server.*;
 import com.tugalsan.api.function.client.maythrow.checkedexceptions.TGS_FuncMTCEUtils;
 import com.tugalsan.api.sql.conn.server.*;
-import com.tugalsan.api.string.client.TGS_StringUtils;
 import com.tugalsan.api.thread.server.sync.TS_ThreadSyncTrigger;
 import com.tugalsan.api.thread.server.async.scheduled.TS_ThreadAsyncScheduled;
 import java.time.Duration;
@@ -18,6 +17,7 @@ import java.time.Duration;
 public class TS_SQLBackupUtils {
 
     final private static TS_Log d = TS_Log.of(true, TS_SQLBackupUtils.class);
+    final private static boolean USE_ZIP = false;
 
     public static String NAME_DB_PARAM_EXEMYSQLDUMP() {
         return "exeMYSQLdump";
@@ -94,6 +94,10 @@ public class TS_SQLBackupUtils {
 
     //BACKUP
     private static void backup_createFileZip(TS_ThreadSyncTrigger servletKillTrigger, TS_SQLConnAnchor anchor, Path exeMYSQLdump, Path pathDump, Path pathZip) {
+        if (!USE_ZIP) {
+            d.cr("backup_createFileZip", "skipped");
+            return;
+        }
         backup_toFileDump(anchor, exeMYSQLdump, pathDump);
         TS_FileZipUtils.zipFile(servletKillTrigger, pathDump, pathZip);
         d.cr("backup_createFileZip", "zippedTo", pathZip);
@@ -153,6 +157,10 @@ public class TS_SQLBackupUtils {
                     d.cr("cleanUp", "old", "deleting...", subFile);
                     TS_FileUtils.deleteFileIfExists(subFile);
                 });
+        if (!USE_ZIP) {
+            d.cr("cleanUp", "dump", "skipped");
+            return;
+        }
         subFiles.stream()
                 .filter(subFile -> subFile.endsWith(".dump"))
                 .forEachOrdered(subFile -> {
