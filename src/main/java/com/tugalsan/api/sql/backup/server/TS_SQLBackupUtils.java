@@ -39,46 +39,57 @@ public class TS_SQLBackupUtils {
 
     }
 
-    public static void backupEveryDay(TS_SQLConnAnchor anchor, Config config) {
-        d.cr("backupEveryDay", config.dstFolder);
+    public static void backupEveryDay(Config config, TS_SQLConnAnchor... anchors) {
+        backupEveryDay(config, Arrays.asList(anchors));
+    }
+
+    public static void backupEveryDay(Config config, List<TS_SQLConnAnchor> anchors) {
+        if (anchors.isEmpty()) {
+            return;
+        }
         TS_ThreadAsyncScheduled.everyDays(config.killTrigger, config.until, true, 1, kt -> {
-            TGS_FuncMTCEUtils.run(() -> {
+            anchors.forEach(anchor -> backupNow(config, anchor));//SEQUENCIAL
+        });
+    }
+
+    private static void backupNow(Config config, TS_SQLConnAnchor anchor) {
+        TGS_FuncMTCEUtils.run(() -> {
+            d.cr("backupEveryDay.backupNow", config.dstFolder);
 //                d.ci("executeEveryDay", "waiting random time...");
 //                TS_ThreadUtils.waitForSeconds(0, 60 * 60 * 2);
-                var now = TGS_Time.of();
-                var dstDbFolder = config.dstFolder.resolve(anchor.config.dbName);
-                TS_DirectoryUtils.createDirectoriesIfNotExists(dstDbFolder);
-                var pathDump = dstDbFolder.resolve(now.toString_YYYY_MM_DD() + ".dump");
-                var pathZip = dstDbFolder.resolve(now.toString_YYYY_MM_DD() + ".zip");
-                var pathBat = pathDump.resolveSibling(now.toString_YYYY_MM_DD() + ".bat");
-                if (TS_FileUtils.isExistFile(pathBat)) {
-                    d.ci("backupEveryDay", "restore already exists", pathBat.toAbsolutePath().toString());
-                } else {
-                    d.ci("backupEveryDay", "restore does not exists", pathBat.toAbsolutePath().toString());
-                    if (config.killTrigger.hasTriggered()) {
-                        return;
-                    }
-                    d.ci("backupEveryDay", "will run cleanup...");
-                    cleanUp(dstDbFolder);
-                    if (config.killTrigger.hasTriggered()) {
-                        return;
-                    }
-                    d.ci("backupEveryDay", "will run create bat...");
-                    restore_createBat(anchor, config.exeMYSQL, config.exe7z, pathDump, pathZip, pathBat);
-                    if (TS_FileUtils.isExistFile(pathZip) || TS_FileUtils.isExistFile(pathDump)) {
-                        d.ci("backupEveryDay", "backup already exists", pathZip.toAbsolutePath().toString());
-                    } else {
-                        if (config.killTrigger.hasTriggered()) {
-                            return;
-                        }
-                        d.ci("backupEveryDay", "will run create zip...");
-                        backup_createFileZip(config.killTrigger, anchor, config.exeMYSQLdump, pathDump, pathZip);
-                    }
-                    d.ci("backupEveryDay", "backup finished.");
+            var now = TGS_Time.of();
+            var dstDbFolder = config.dstFolder.resolve(anchor.config.dbName);
+            TS_DirectoryUtils.createDirectoriesIfNotExists(dstDbFolder);
+            var pathDump = dstDbFolder.resolve(now.toString_YYYY_MM_DD() + ".dump");
+            var pathZip = dstDbFolder.resolve(now.toString_YYYY_MM_DD() + ".zip");
+            var pathBat = pathDump.resolveSibling(now.toString_YYYY_MM_DD() + ".bat");
+            if (TS_FileUtils.isExistFile(pathBat)) {
+                d.ci("backupEveryDay.backupNow", "restore already exists", pathBat.toAbsolutePath().toString());
+            } else {
+                d.ci("backupEveryDay.backupNow", "restore does not exists", pathBat.toAbsolutePath().toString());
+                if (config.killTrigger.hasTriggered()) {
+                    return;
                 }
-                d.ci("backupEveryDay", "startWait...", now.toString());
-            }, e -> d.ct("backupEveryDay", e));
-        });
+                d.ci("backupEveryDay.backupNow", "will run cleanup...");
+                cleanUp(dstDbFolder);
+                if (config.killTrigger.hasTriggered()) {
+                    return;
+                }
+                d.ci("backupEveryDay.backupNow", "will run create bat...");
+                restore_createBat(anchor, config.exeMYSQL, config.exe7z, pathDump, pathZip, pathBat);
+                if (TS_FileUtils.isExistFile(pathZip) || TS_FileUtils.isExistFile(pathDump)) {
+                    d.ci("backupEveryDay.backupNow", "backup already exists", pathZip.toAbsolutePath().toString());
+                } else {
+                    if (config.killTrigger.hasTriggered()) {
+                        return;
+                    }
+                    d.ci("backupEveryDay.backupNow", "will run create zip...");
+                    backup_createFileZip(config.killTrigger, anchor, config.exeMYSQLdump, pathDump, pathZip);
+                }
+                d.ci("backupEveryDay.backupNow", "backup finished.");
+            }
+            d.ci("backupEveryDay.backupNow", "startWait...", now.toString());
+        }, e -> d.ct("backupEveryDay.backupNow", e));
     }
 
     //BACKUP
