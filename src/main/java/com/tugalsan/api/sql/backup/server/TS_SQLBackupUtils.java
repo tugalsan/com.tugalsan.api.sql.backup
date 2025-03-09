@@ -68,11 +68,13 @@ public class TS_SQLBackupUtils {
             } else {
                 d.ci("backupEveryDay.backupNow", "restore does not exists", pathBat.toAbsolutePath().toString());
                 if (config.killTrigger.hasTriggered()) {
+                    d.ce("backupEveryDay.backupNow", "config.killTrigger.hasTriggered()", "#1");
                     return;
                 }
                 d.ci("backupEveryDay.backupNow", "will run cleanup...");
                 cleanUp(dstDbFolder);
                 if (config.killTrigger.hasTriggered()) {
+                    d.ce("backupEveryDay.backupNow", "config.killTrigger.hasTriggered()", "#2");
                     return;
                 }
                 d.ci("backupEveryDay.backupNow", "will run create bat...");
@@ -81,6 +83,7 @@ public class TS_SQLBackupUtils {
                     d.ci("backupEveryDay.backupNow", "backup already exists", pathZip.toAbsolutePath().toString());
                 } else {
                     if (config.killTrigger.hasTriggered()) {
+                        d.ce("backupEveryDay.backupNow", "config.killTrigger.hasTriggered()", "#3");
                         return;
                     }
                     d.ci("backupEveryDay.backupNow", "will run create zip...");
