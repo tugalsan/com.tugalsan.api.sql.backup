@@ -46,7 +46,7 @@ public class TS_SQLBackupUtils {
         if (anchors.isEmpty()) {
             return;
         }
-        TS_ThreadAsyncScheduled.everyDays("backup_sql_everyday",config.killTrigger.newChild(d.className), config.until, true, 1, kt -> {
+        TS_ThreadAsyncScheduled.everyDays("backup_sql_everyday", config.killTrigger.newChild(d.className), config.until, true, 1, kt -> {
             anchors.forEach(anchor -> backupNow(config, anchor));//SEQUENCIAL
         });
     }
@@ -176,65 +176,3 @@ public class TS_SQLBackupUtils {
                 });
     }
 }
-/*
-
-
-[spi-database] {TS_SQLBackupUtils}, {backupEveryDay.backupNow}, {[startWait...], [10.03.2025 02:22:44]}
-[spi-database] {TS_SQLBackupUtils}, {backupEveryDay.backupNow}, {[C:\dat\sql\bck]}
-[spi-database] {TS_SQLBackupUtils}, {backupEveryDay.backupNow}, {[restore does not exists], [C:\dat\sql\bck\autosqlweb\2025-03-10.bat]}
-[spi-database] {TS_ThreadSyncTrigger}, {hasTriggered}, {[spi-database], [false]}
-[spi-database] {TS_ThreadSyncTrigger}, {hasTriggered}, {[TS_ThreadAsyncBuilder0Kill], [false]}
-[spi-database] {TS_ThreadSyncTrigger}, {hasTriggered}, {[TS_ThreadAsyncBuilderObject], [false]}
-[spi-database] {TS_ThreadSyncTrigger}, {hasTriggered}, {[TS_ThreadAsyncAwaitSingle], [false]}
-[spi-database] {TS_SQLBackupUtils}, {backupEveryDay.backupNow}, {[will run cleanup...]}
-[spi-database] {TS_ThreadSyncTrigger}, {hasTriggered}, {[spi-database], [false]}
-[spi-database] {TS_ThreadSyncTrigger}, {hasTriggered}, {[TS_ThreadAsyncBuilder0Kill], [false]}
-[spi-database] {TS_ThreadSyncTrigger}, {hasTriggered}, {[TS_ThreadAsyncBuilderObject], [false]}
-[spi-database] {TS_ThreadSyncTrigger}, {hasTriggered}, {[TS_ThreadAsyncAwaitSingle], [false]}
-[spi-database] {TS_SQLBackupUtils}, {backupEveryDay.backupNow}, {[will run create bat...]}
-[spi-database] {TS_SQLBackupUtils}, {restore_createBat}, {[restoreBatCreateStart], [C:\dat\sql\bck\autosqlweb\2025-03-10.bat]}
-[spi-database] {TS_SQLBackupUtils}, {restore_createBat}, {[restoreBatCreateFin]}
-[spi-database] {TS_ThreadSyncTrigger}, {hasTriggered}, {[spi-database], [false]}
-[spi-database] {TS_ThreadSyncTrigger}, {hasTriggered}, {[TS_ThreadAsyncBuilder0Kill], [false]}
-[spi-database] {TS_ThreadSyncTrigger}, {hasTriggered}, {[TS_ThreadAsyncBuilderObject], [false]}
-[spi-database] {TS_ThreadSyncTrigger}, {hasTriggered}, {[TS_ThreadAsyncAwaitSingle], [false]}
-[spi-database] {TS_SQLBackupUtils}, {backupEveryDay.backupNow}, {[will run create zip...]}
-[spi-database] {TS_SQLBackupUtils}, {backup_toFileDump}, {[backupStart], [C:\dat\sql\bck\autosqlweb\2025-03-10.dump]}
-[spi-database] {TS_SQLBackupUtils}, {backup_toFileDump}, {[will run cmd], [C:\bin\mariadb\home\bin\mysqldump.exe -uroot -ppWjXvhjhYpzPVeu33ZtIBgDkfq2hZa71 -P 3360 --databases autosqlweb -r C:\dat\sql\bck\autosqlweb\2025-03-10.dump]}
-[spi-database] {TS_SQLBackupUtils}, {backup_toFileDump}, {[backupFinWith], [p.output], []}
-[spi-database] {TS_SQLBackupUtils}, {backup_toFileDump}, {[backupFinWith], [p.error], []}
-[spi-database] {AppServlet}, {contextInitialized}, {[#3.2]}
-[spi-database] {TS_SURLExecutorList}, {add}, {[TGS_LibRqlServletUtils_CLEANTABLEBUFFER]}
-[spi-database] {TS_SURLExecutorList}, {add}, {[TGS_LibRqlServletUtils_FIXDATES]}
-[spi-database] {AppServlet}, {contextInitialized}, {[#3.3]}
-[spi-database] {TS_ThreadSyncTrigger}, {hasTriggered}, {[Unnamed.started], [false]}
-[spi-database] {TS_ThreadSyncTrigger}, {trigger}, {[Unnamed.started], [builder_asyncRun()[started]]}
-[spi-database] {AppServlet}, {contextInitialized}, {[#3.4]}
-[spi-database] {TS_ThreadSyncTrigger}, {hasTriggered}, {[spi-database], [false]}
-[spi-database] {TS_ThreadSyncTrigger}, {hasTriggered}, {[TS_ThreadAsyncBuilder0Kill], [false]}
-[spi-database] {TS_ThreadSyncTrigger}, {hasTriggered}, {[TS_ThreadAsyncBuilderObject], [false]}
-[spi-database] {TS_ThreadSyncTrigger}, {hasTriggered}, {[TS_ThreadAsyncAwaitSingle], [false]}
-[spi-database] {TS_ThreadSyncTrigger}, {hasTriggered}, {[TS_LibRqlBufferFastUpdateUtils], [false]}
-[spi-database] {TS_ThreadSyncTrigger}, {hasTriggered}, {[TS_ThreadAsyncBuilder0Kill], [false]}
-[spi-database] {AppServlet}, {contextInitialized}, {[#3.5]}
-[spi-database] {AppServlet}, {contextInitialized}, {[#3.6]}
-[spi-database] {AppServlet}, {contextInitialized}, {[PARALLEL_THRESHOLD_MB], [4096]}
-[spi-database] {AppServlet}, {contextInitialized}, {[#3.7]}
-[spi-database] {TS_LibBootUtils}, {_contextInitialized_runAfterExe}, {[done]}
-[spi-database] {TS_LibBootUtils}, {_contextInitialized}, {[#18], [_contextInitialized_runAfterExe], [ok]}
-[spi-database] {TS_ThreadSyncTrigger}, {trigger}, {[TS_ThreadAsyncAwaitSingle], [sgl_inawait_finally]}
-[spi-database] {TS_ThreadSyncTrigger}, {trigger}, {[Unnamed.dead], [builder_run[dead]]}
-[spi-database] {TS_SQLBackupUtils}, {backup_createFileZip}, {[zippedTo], [C:\dat\sql\bck\autosqlweb\2025-03-10.zip]}
-[spi-database] {TS_SQLBackupUtils}, {backup_createFileZip}, {[cleanUp], [C:\dat\sql\bck\autosqlweb\2025-03-10.dump]}
-[spi-database] {TS_SQLBackupUtils}, {backupEveryDay.backupNow}, {[backup finished.]}
-
-[spi-database] {TS_SQLBackupUtils}, {backupEveryDay.backupNow}, {[startWait...], [10.03.2025 02:22:45]}
-[spi-database] {TS_SQLBackupUtils}, {backupEveryDay.backupNow}, {[C:\dat\sql\bck]}
-[spi-database] {TS_SQLBackupUtils}, {backupEveryDay.backupNow}, {[restore does not exists], [C:\dat\sql\bck\autosqlweb_rev\2025-03-10.bat]}
-[spi-database] {TS_ThreadSyncTrigger}, {hasTriggered}, {[TS_ThreadAsyncAwaitSingle], [true]}
-[spi-database] {TS_SQLBackupUtils}, {backupEveryDay.backupNow}, {[config.killTrigger.hasTriggered()], [#1]}
-[spi-database] {TS_ThreadSyncTrigger}, {trigger}, {[TS_ThreadAsyncAwaitSingle], [sgl_inawait_finally]}
-[spi-database] {TS_LibRqlBufferFastUpdateUtils}, {start}, {[lst.isEmpty()], [skip]}
-[spi-database] {TS_ThreadSyncTrigger}, {trigger}, {[TS_ThreadAsyncAwaitSingle], [sgl_inawait_finally]}
-
- */
