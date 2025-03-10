@@ -17,7 +17,6 @@ import java.time.Duration;
 public class TS_SQLBackupUtils {
 
     final private static TS_Log d = TS_Log.of(true, TS_SQLBackupUtils.class);
-    final private static boolean USE_ZIP = false;
 
     public static String NAME_DB_PARAM_EXEMYSQLDUMP() {
         return "exeMYSQLdump";
@@ -53,6 +52,7 @@ public class TS_SQLBackupUtils {
     }
 
     private static void backupNow(Config config, TS_SQLConnAnchor anchor) {
+        var USE_ZIP = config.exe7z != null;
         TGS_FuncMTCEUtils.run(() -> {
             d.cr("backupEveryDay.backupNow", config.dstFolder);
 //                d.ci("executeEveryDay", "waiting random time...");
@@ -72,13 +72,13 @@ public class TS_SQLBackupUtils {
                     return;
                 }
                 d.ci("backupEveryDay.backupNow", "will run cleanup...");
-                cleanUp(dstDbFolder);
+                cleanUp(USE_ZIP, dstDbFolder);
                 if (config.killTrigger.hasTriggered()) {
                     d.ce("backupEveryDay.backupNow", "config.killTrigger.hasTriggered()", "#2");
                     return;
                 }
                 d.ci("backupEveryDay.backupNow", "will run create bat...");
-                restore_createBat(anchor, config.exeMYSQL, config.exe7z, pathDump, pathZip, pathBat);
+                restore_createBat(USE_ZIP, anchor, config.exeMYSQL, config.exe7z, pathDump, pathZip, pathBat);
                 if (TS_FileUtils.isExistFile(pathZip) || TS_FileUtils.isExistFile(pathDump)) {
                     d.ci("backupEveryDay.backupNow", "backup already exists", pathZip.toAbsolutePath().toString());
                 } else {
@@ -87,7 +87,7 @@ public class TS_SQLBackupUtils {
                         return;
                     }
                     d.ci("backupEveryDay.backupNow", "will run create zip...");
-                    backup_createFileZip(anchor, config.exeMYSQLdump, pathDump, pathZip);
+                    backup_createFileZip(USE_ZIP, anchor, config.exeMYSQLdump, pathDump, pathZip);
                 }
                 d.ci("backupEveryDay.backupNow", "backup finished.");
             }
@@ -96,7 +96,7 @@ public class TS_SQLBackupUtils {
     }
 
     //BACKUP
-    private static void backup_createFileZip(TS_SQLConnAnchor anchor, Path exeMYSQLdump, Path pathDump, Path pathZip) {
+    private static void backup_createFileZip(boolean USE_ZIP, TS_SQLConnAnchor anchor, Path exeMYSQLdump, Path pathDump, Path pathZip) {
         backup_toFileDump(anchor, exeMYSQLdump, pathDump);
         if (!USE_ZIP) {
             d.cr("backup_createFileZip", "skipped");
@@ -126,14 +126,14 @@ public class TS_SQLBackupUtils {
     }
 
     //RESTORE
-    private static void restore_createBat(TS_SQLConnAnchor anchor, Path exeMYSQL, Path exe7z, Path pathDump, Path pathZip, Path pathBat) {
+    private static void restore_createBat(boolean USE_ZIP, TS_SQLConnAnchor anchor, Path exeMYSQL, Path exe7z, Path pathDump, Path pathZip, Path pathBat) {
         d.cr("restore_createBat", "restoreBatCreateStart", pathBat.toAbsolutePath().toString());
-        TS_FileTxtUtils.toFile(restore_createBatContent(pathDump, exeMYSQL, exe7z, pathZip, anchor), pathBat, false);
+        TS_FileTxtUtils.toFile(restore_createBatContent(USE_ZIP, pathDump, exeMYSQL, exe7z, pathZip, anchor), pathBat, false);
         d.cr("restore_createBat", "restoreBatCreateFin");
     }
 
     //TODO  --host=remote.example.com --port=13306
-    private static String restore_createBatContent(Path pathDump, Path exeMYSQL, Path exe7z, Path pathZip, TS_SQLConnAnchor anchor) {
+    private static String restore_createBatContent(boolean USE_ZIP, Path pathDump, Path exeMYSQL, Path exe7z, Path pathZip, TS_SQLConnAnchor anchor) {
         var sj = new StringJoiner("\n");
         if (USE_ZIP) {
             sj.add("\"" + exe7z.toAbsolutePath().toString() + "\" e " + pathZip.toAbsolutePath().toString());
@@ -155,7 +155,7 @@ public class TS_SQLBackupUtils {
     }
 
     //CLEANUP
-    private static void cleanUp(Path dstFolder) {
+    private static void cleanUp(boolean USE_ZIP, Path dstFolder) {
         var subFiles = TS_DirectoryUtils.subFiles(dstFolder, null, true, false);
         var prefix = TGS_Time.of().toString_YYYY_MM();
         subFiles.stream()
@@ -237,4 +237,4 @@ public class TS_SQLBackupUtils {
 [spi-database] {TS_LibRqlBufferFastUpdateUtils}, {start}, {[lst.isEmpty()], [skip]}
 [spi-database] {TS_ThreadSyncTrigger}, {trigger}, {[TS_ThreadAsyncAwaitSingle], [sgl_inawait_finally]}
 
-*/
+ */
