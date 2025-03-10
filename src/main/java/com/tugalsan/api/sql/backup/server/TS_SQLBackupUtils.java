@@ -46,7 +46,7 @@ public class TS_SQLBackupUtils {
         if (anchors.isEmpty()) {
             return;
         }
-        TS_ThreadAsyncScheduled.everyDays(config.killTrigger.newChild(d.className), config.until, true, 1, kt -> {
+        TS_ThreadAsyncScheduled.everyDays("backup_sql_everyday",config.killTrigger.newChild(d.className), config.until, true, 1, kt -> {
             anchors.forEach(anchor -> backupNow(config, anchor));//SEQUENCIAL
         });
     }
