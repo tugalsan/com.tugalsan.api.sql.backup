@@ -34,7 +34,7 @@ public class TS_SQLBackupUtils {
         return "appNameForBackupSQL";
     }
 
-    public static record Config(TS_ThreadSyncTrigger killTrigger, Duration until, Path dstFolder, Path exeMYSQLdump, Path exeMYSQL, Path exe7z) {
+    public static record Config(TS_ThreadSyncTrigger killTriggerContext, Duration until, Path dstFolder, Path exeMYSQLdump, Path exeMYSQL, Path exe7z) {
 
     }
 
@@ -46,7 +46,7 @@ public class TS_SQLBackupUtils {
         if (anchors.isEmpty()) {
             return;
         }
-        TS_ThreadAsyncScheduled.everyDays("backup_sql_everyday", config.killTrigger.newChild(d.className), config.until, true, 1, kt -> {
+        TS_ThreadAsyncScheduled.everyDays("backup_sql_everyday", config.killTriggerContext.newChild(d.className), config.until, true, 1, kt -> {
             anchors.forEach(anchor -> backupNow(config, anchor));//SEQUENCIAL
         });
     }
@@ -67,13 +67,13 @@ public class TS_SQLBackupUtils {
                 d.ci("backupEveryDay.backupNow", "restore already exists", pathBat.toAbsolutePath().toString());
             } else {
                 d.ci("backupEveryDay.backupNow", "restore does not exists", pathBat.toAbsolutePath().toString());
-                if (config.killTrigger.hasTriggered()) {
+                if (config.killTriggerContext.hasTriggered()) {
                     d.ce("backupEveryDay.backupNow", "config.killTrigger.hasTriggered()", "#1");
                     return;
                 }
                 d.ci("backupEveryDay.backupNow", "will run cleanup...");
                 cleanUp(USE_ZIP, dstDbFolder);
-                if (config.killTrigger.hasTriggered()) {
+                if (config.killTriggerContext.hasTriggered()) {
                     d.ce("backupEveryDay.backupNow", "config.killTrigger.hasTriggered()", "#2");
                     return;
                 }
@@ -82,7 +82,7 @@ public class TS_SQLBackupUtils {
                 if (TS_FileUtils.isExistFile(pathZip) || TS_FileUtils.isExistFile(pathDump)) {
                     d.ci("backupEveryDay.backupNow", "backup already exists", pathZip.toAbsolutePath().toString());
                 } else {
-                    if (config.killTrigger.hasTriggered()) {
+                    if (config.killTriggerContext.hasTriggered()) {
                         d.ce("backupEveryDay.backupNow", "config.killTrigger.hasTriggered()", "#3");
                         return;
                     }
