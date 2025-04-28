@@ -18,6 +18,8 @@ public class TS_SQLBackupUtils {
 
     final private static TS_Log d = TS_Log.of(true, TS_SQLBackupUtils.class);
 
+    final private static boolean SKIP_SSL = true;
+
     public static String NAME_DB_PARAM_EXEMYSQLDUMP() {
         return "exeMYSQLdump";
     }
@@ -51,7 +53,7 @@ public class TS_SQLBackupUtils {
         });
     }
 
-    private static void backupNow(Config config, TS_SQLConnAnchor anchor) {
+    private static void backupNow(Config config, TS_SQLConnAnchor anchor) {        
         var USE_ZIP = config.exe7z != null;
         TGS_FuncMTCUtils.run(() -> {
             d.cr("backupEveryDay.backupNow", config.dstFolder);
@@ -109,12 +111,13 @@ public class TS_SQLBackupUtils {
     }
 
     private static void backup_toFileDump(TS_SQLConnAnchor anchor, Path exeMYSQLdump, Path pathDump) {
+        var CMD_SKIP_SSL = SKIP_SSL ? " --skip-ssl" : "";
         d.cr("backup_toFileDump", "backupStart", pathDump);
         String cmd;
         if (anchor.config.dbPassword == null || anchor.config.dbPassword.isEmpty()) {
-            cmd = exeMYSQLdump.toAbsolutePath().toString() + " -u" + anchor.config.dbUser + " -P " + anchor.config.dbPort + " --databases " + anchor.config.dbName + " -r " + pathDump.toAbsolutePath().toString();
+            cmd = exeMYSQLdump.toAbsolutePath().toString() + " -u" + anchor.config.dbUser + " -P " + anchor.config.dbPort + " --databases " + anchor.config.dbName + " -r " + pathDump.toAbsolutePath().toString() + CMD_SKIP_SSL;
         } else {
-            cmd = exeMYSQLdump.toAbsolutePath().toString() + " -u" + anchor.config.dbUser + " -p" + anchor.config.dbPassword + " -P " + anchor.config.dbPort + " --databases " + anchor.config.dbName + " -r " + pathDump.toAbsolutePath().toString();
+            cmd = exeMYSQLdump.toAbsolutePath().toString() + " -u" + anchor.config.dbUser + " -p" + anchor.config.dbPassword + " -P " + anchor.config.dbPort + " --databases " + anchor.config.dbName + " -r " + pathDump.toAbsolutePath().toString() + CMD_SKIP_SSL;
         }
         d.ce("backup_toFileDump", "will run cmd", cmd);
         var p = TS_OsProcess.of(cmd);
@@ -134,19 +137,20 @@ public class TS_SQLBackupUtils {
 
     //TODO  --host=remote.example.com --port=13306
     private static String restore_createBatContent(boolean USE_ZIP, Path pathDump, Path exeMYSQL, Path exe7z, Path pathZip, TS_SQLConnAnchor anchor) {
+        var CMD_SKIP_SSL = SKIP_SSL ? " --skip-ssl" : "";
         var sj = new StringJoiner("\n");
         if (USE_ZIP) {
             sj.add("\"" + exe7z.toAbsolutePath().toString() + "\" e " + pathZip.toAbsolutePath().toString());
         }
         var o = " --host=" + anchor.config.dbIp + " --port=" + anchor.config.dbPort;
         if (anchor.config.dbPassword == null || anchor.config.dbPassword.isEmpty()) {
-            sj.add(exeMYSQL.toAbsolutePath().toString() + o + " -u " + anchor.config.dbUser + " -P " + anchor.config.dbPort + " -e \"DROP DATABASE IF EXISTS " + anchor.config.dbName + ";\"");
-            sj.add(exeMYSQL.toAbsolutePath().toString() + o + " -u " + anchor.config.dbUser + " -P " + anchor.config.dbPort + " -e \"CREATE DATABASE " + anchor.config.dbName + ";\"");
-            sj.add(exeMYSQL.toAbsolutePath().toString() + o + " -u" + anchor.config.dbUser + " -P " + anchor.config.dbPort + " " + anchor.config.dbName + " < " + pathDump.toAbsolutePath().toString());
+            sj.add(exeMYSQL.toAbsolutePath().toString() + o + " -u " + anchor.config.dbUser + " -P " + anchor.config.dbPort + " -e \"DROP DATABASE IF EXISTS " + anchor.config.dbName + ";\"" + CMD_SKIP_SSL);
+            sj.add(exeMYSQL.toAbsolutePath().toString() + o + " -u " + anchor.config.dbUser + " -P " + anchor.config.dbPort + " -e \"CREATE DATABASE " + anchor.config.dbName + ";\"" + CMD_SKIP_SSL);
+            sj.add(exeMYSQL.toAbsolutePath().toString() + o + " -u" + anchor.config.dbUser + " -P " + anchor.config.dbPort + " " + anchor.config.dbName + " < " + pathDump.toAbsolutePath().toString() + CMD_SKIP_SSL);
         } else {
-            sj.add(exeMYSQL.toAbsolutePath().toString() + o + " -u " + anchor.config.dbUser + " -p" + anchor.config.dbPassword + " -P " + anchor.config.dbPort + " -e \"DROP DATABASE IF EXISTS " + anchor.config.dbName + ";\"");
-            sj.add(exeMYSQL.toAbsolutePath().toString() + o + " -u " + anchor.config.dbUser + " -p" + anchor.config.dbPassword + " -P " + anchor.config.dbPort + " -e \"CREATE DATABASE " + anchor.config.dbName + ";\"");
-            sj.add(exeMYSQL.toAbsolutePath().toString() + o + " -u" + anchor.config.dbUser + " -p" + anchor.config.dbPassword + " -P " + anchor.config.dbPort + " " + anchor.config.dbName + " < " + pathDump.toAbsolutePath().toString());
+            sj.add(exeMYSQL.toAbsolutePath().toString() + o + " -u " + anchor.config.dbUser + " -p" + anchor.config.dbPassword + " -P " + anchor.config.dbPort + " -e \"DROP DATABASE IF EXISTS " + anchor.config.dbName + ";\"" + CMD_SKIP_SSL);
+            sj.add(exeMYSQL.toAbsolutePath().toString() + o + " -u " + anchor.config.dbUser + " -p" + anchor.config.dbPassword + " -P " + anchor.config.dbPort + " -e \"CREATE DATABASE " + anchor.config.dbName + ";\"" + CMD_SKIP_SSL);
+            sj.add(exeMYSQL.toAbsolutePath().toString() + o + " -u" + anchor.config.dbUser + " -p" + anchor.config.dbPassword + " -P " + anchor.config.dbPort + " " + anchor.config.dbName + " < " + pathDump.toAbsolutePath().toString() + CMD_SKIP_SSL);
         }
         if (USE_ZIP) {
             sj.add("del " + pathDump.toAbsolutePath().toString());
